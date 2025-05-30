@@ -1,6 +1,12 @@
 name: CI
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   lint:
@@ -16,8 +22,18 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Install Black
-        run: pip install black
+      - name: Cache pip
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Upgrade pip & install Black
+        run: |
+          pip install --upgrade pip
+          pip install black
 
       - name: Run Black linter
         run: black --check .
